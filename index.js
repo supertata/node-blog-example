@@ -93,10 +93,14 @@ server.get('/users/:userId/posts/:postId',  (req, res) => {
 
 //What is the URL of this endpoint?
 server.post('/posts',  (req, res) => {
-  let newPost = req.body; 
-  let userId = newPost.user_id; //the user id of the new post
-  let user = database.users.find(u => u.id === parseInt(userId)) //find the user based on the user id
-  if (user !== undefined) { //if the user exists
+  let newPost = {
+    title : req.body.title,
+    body : req.body.body,
+    user_id : req.body.user_id,
+    created_at : new Date().toISOString()
+  }
+  
+  if (validatePost(newPost)) { //if the user exists
     let newId = database.posts[database.posts.length -1].id + 1; //create the new id
     newPost.id = newId; //set the new post's id
     database.posts.push(newPost); //store in the array
@@ -106,6 +110,19 @@ server.post('/posts',  (req, res) => {
   }
 });
 
+function validatePost(post) {
+  if (
+    post !== undefined &&
+    post.title !== undefined &&
+    post.title.length !== 0 &&
+    post.body !== undefined &&
+    post.body.length !== 0 &&
+    post.user_id !== undefined &&
+    database.users.find(u => u.id === parseInt(post.user_id)) !== undefined
+  )
+    return true;
+  return false;
+}
 
 //3. I wish to delete one single post based on its id
 
@@ -144,11 +161,12 @@ server.delete('/users/:userId',  (req, res) => {
 server.put('/posts/:postId',  (req, res) => {
   const { postId } = req.params;
   let post = database.posts.find(p => p.id === parseInt(postId));
-  if (post !== undefined) {
+  if (post !== undefined && req.body.title != undefined && req.body.body !== undefined) {
     const newTitle = req.body.title;
     const newBody = req.body.body;
     post.title = newTitle;
     post.body = newBody;
+    post.updated_at = new Date().toISOString();
     res.json(post);  
   } else {
     res.status(404).send();
