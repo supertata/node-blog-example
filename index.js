@@ -157,23 +157,36 @@ server.delete('/users/:userId',  (req, res) => {
 });
 
 
-//Put
+//This is the teacher led demo for the update/PUT
 server.put('/posts/:postId',  (req, res) => {
   const { postId } = req.params;
+  let newPost = {
+    title : req.body.title,
+    body: req.body.body
+  }
   let post = database.posts.find(p => p.id === parseInt(postId));
-  if (post !== undefined && req.body.title != undefined && req.body.body !== undefined) {
-    const newTitle = req.body.title;
-    const newBody = req.body.body;
-    post.title = newTitle;
-    post.body = newBody;
-    post.updated_at = new Date().toISOString();
-    res.json(post);  
+  if (post !== undefined) {
+    if (newPost.title != undefined && newPost.body !== undefined) {
+      post.title = newPost.title;
+      post.body = newPost.body;
+      post.updated_at = new Date().toISOString();
+      res.json(post);    
+    } else {
+      res.status(400).send();  
+    }
   } else {
     res.status(404).send();
   }
 });
 
+server.get('/users',  (req, res) => {
+  res.json(database.users)
+});
+
 //Exercise: based on the PUT above implement an update enpoint for the users
+//Requirements: 
+// - 404 is the user doesn't exist
+// - 400 if the data validation is failed
 //1. URL ?
 //2. Which fields can/should be updated?
 //3. Possible validations?
